@@ -256,12 +256,10 @@ const MarketSentimentChart = ({ data, title }: { data: any, title: string }) => 
   );
 };
 
-interface PageProps {
-  params: {
-    symbol: string;
-  };
+type PageProps = {
+  params: { symbol: string };
   searchParams?: { [key: string]: string | string[] | undefined };
-}
+};
 
 export default function CoinDetails({ params }: PageProps) {
   const [activeTab, setActiveTab] = useState("overview");
