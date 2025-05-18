@@ -265,7 +265,7 @@ export default function CoinDetails({ params }: { params: { symbol: string } }) 
     return (
       <div className="w-full max-w-5xl mx-auto py-20 px-4 text-center">
         <h1 className="text-3xl font-bold mb-4">Coin Not Found</h1>
-        <p className="text-muted-foreground mb-6">We couldn't find any information for the symbol {symbol}</p>
+        <p className="text-muted-foreground mb-6">We couldnt find any information for the symbol {symbol}</p>
         <Button as="a" href="/" color="primary">Back to Dashboard</Button>
       </div>
     );
