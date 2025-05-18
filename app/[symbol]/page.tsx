@@ -256,7 +256,14 @@ const MarketSentimentChart = ({ data, title }: { data: any, title: string }) => 
   );
 };
 
-export default function CoinDetails({ params }: { params: { symbol: string } }) {
+interface PageProps {
+  params: {
+    symbol: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default function CoinDetails({ params }: PageProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const symbol = params.symbol.toUpperCase();
   const coin = cryptoData[symbol as keyof typeof cryptoData];
