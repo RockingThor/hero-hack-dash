@@ -5,6 +5,7 @@ import { Progress } from "@heroui/progress";
 import { Button } from "@heroui/button";
 import { Tooltip } from "@heroui/tooltip";
 import { Input } from "@heroui/input";
+import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from "@heroui/table";
 import { useRouter } from "next/navigation";
 
 const cryptoData = [
@@ -35,7 +36,7 @@ const cryptoData = [
     change: 4.7,
     marketCap: "65B",
     allocation: 15,
-    icon: "",
+    icon: "", // Removed emoji for consistency
     redirect: "/sol",
   },
   {
@@ -60,10 +61,20 @@ const cryptoData = [
   },
 ];
 
-const portfolioValue = cryptoData.reduce((acc, c) => acc + c.price * (c.allocation * 100), 0);
+const portfolioValue = cryptoData.reduce((acc, c) => acc + c.price * (c.allocation / 100) * 1000 , 0); // Simplified allocation calculation for example
 
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
+
+  const columns = [
+    { key: "coin", label: "Coin" },
+    { key: "price", label: "Price" },
+    { key: "change", label: "24h Change" },
+    { key: "marketCap", label: "Market Cap" },
+    { key: "allocation", label: "Allocation" },
+    { key: "actions", label: "" },
+  ];
+
   return (
     <section className="w-full max-w-5xl mx-auto py-10 px-4 flex flex-col gap-8">
       {/* Header */}
@@ -76,57 +87,60 @@ export default function Home() {
       </div>
 
       {/* Portfolio Summary */}
-      <Card className="flex flex-col md:flex-row justify-between items-center gap-6 p-6 shadow-lg bg-background">
-        <div>
-          <div className="text-lg text-muted-foreground">Total Portfolio Value</div>
-          <div className="text-2xl md:text-3xl font-semibold">${portfolioValue.toLocaleString()}</div>
+      <Card className="flex flex-col md:flex-row justify-between items-start gap-6 p-6 shadow-lg bg-background">
+        <div className="flex flex-col">
+          <div className="text-sm text-muted-foreground mb-1">Total Portfolio Value</div>
+          <div className="text-3xl md:text-4xl font-bold">${portfolioValue.toLocaleString()}</div>
         </div>
-        <div className="flex gap-4">
-          <Chip color="primary">Coins: {cryptoData.length}</Chip>
-          <Chip color="success">24h Change: +2.3%</Chip>
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center mt-2 md:mt-0">
+          <Chip color="primary" variant="flat">Coins: {cryptoData.length}</Chip>
+          <Chip color="success" variant="flat">24h Change: +2.3%</Chip> {/* This is static, consider making it dynamic later */}
         </div>
       </Card>
 
       {/* Crypto Table */}
-      <Card className="overflow-x-auto p-0">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="bg-muted">
-              <th className="py-3 px-4 text-left font-semibold">Coin</th>
-              <th className="py-3 px-4 text-left font-semibold">Price</th>
-              <th className="py-3 px-4 text-left font-semibold">24h Change</th>
-              <th className="py-3 px-4 text-left font-semibold">Market Cap</th>
-              <th className="py-3 px-4 text-left font-semibold">Allocation</th>
-              <th className="py-3 px-4"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {cryptoData.map((coin) => (
-              <tr key={coin.symbol} className="border-b last:border-none hover:bg-accent transition-colors">
-                <td className="py-3 px-4 flex items-center gap-2 font-medium">
-                  <span className="text-xl">{coin.icon}</span>
-                  {coin.name} <span className="text-muted-foreground text-xs">({coin.symbol})</span>
-                </td>
-                <td className="py-3 px-4">${coin.price.toLocaleString()}</td>
-                <td className={`py-3 px-4 font-semibold ${coin.change >= 0 ? "text-success" : "text-danger"}`}>
-                  {coin.change >= 0 ? "+" : ""}{coin.change}%
-                </td>
-                <td className="py-3 px-4">{coin.marketCap}</td>
-                <td className="py-3 px-4 w-48">
-                  <Progress value={coin.allocation} color="primary" className="h-2" />
-                  <span className="text-xs text-muted-foreground ml-2">{coin.allocation}%</span>
-                </td>
-                <td className="py-3 px-4">
+      <Card className="p-0">
+        <Table aria-label="Crypto Portfolio Table">
+          <TableHeader>
+            {columns.map((column) => (
+              <TableColumn key={column.key} className={`${column.key === "actions" ? "text-right" : ""} ${column.key === "allocation" ? "w-48" : ""}`}>
+                {column.label}
+              </TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody items={cryptoData}>
+            {(item) => (
+              <TableRow key={item.symbol}>
+                <TableCell>
+                  <div className="flex items-center gap-3 font-medium">
+                    <span className="w-8 h-8 flex items-center justify-center bg-primary-50 text-primary font-semibold rounded-full text-sm">
+                      {item.name.charAt(0)}
+                    </span>
+                    {item.name} <span className="text-muted-foreground text-xs">({item.symbol})</span>
+                  </div>
+                </TableCell>
+                <TableCell>${item.price.toLocaleString()}</TableCell>
+                <TableCell className={`font-medium ${item.change >= 0 ? "text-success" : "text-danger"}`}>
+                  {item.change >= 0 ? "+" : ""}{item.change}%
+                </TableCell>
+                <TableCell>{item.marketCap}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2 w-full">
+                    <Progress value={item.allocation} color="primary" className="h-2 flex-grow" />
+                    <span className="text-xs text-muted-foreground w-8 text-right">{item.allocation}%</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
                   <Tooltip content="View details">
-                    <Button size="sm" variant="ghost" color="primary" onClick={() => router.push(coin.redirect)}>
+                    <Button size="sm" variant="light" color="primary" onClick={() => router.push(item.redirect)}>
                       Details
                     </Button>
                   </Tooltip>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </Card>
     </section>
   );
